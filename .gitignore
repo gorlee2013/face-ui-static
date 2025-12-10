@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+
+# Data / assets
+public/
+backend/
+
+# Python / ML
+*.pth
+*.pt
+*.onnx
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# OS
+.DS_Store
