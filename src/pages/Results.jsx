@@ -1,9 +1,13 @@
+import { useNavigate } from "react-router-dom";
 import ScoreTracker from "../components/ScoreTracker";
 import CumulativeChart from "../components/CumulativeChart";
 import Confetti from "react-confetti";
 import { useWindowSize } from "@react-hook/window-size";
 
 export default function Results() {
+  const navigate = useNavigate();
+  const [width, height] = useWindowSize();
+
   let results = [];
 
   try {
@@ -13,8 +17,7 @@ export default function Results() {
     results = [];
   }
 
-  const [width, height] = useWindowSize();
-
+  // EMPTY STATE
   if (results.length === 0) {
     return (
       <div className="h-screen flex flex-col items-center justify-center">
@@ -24,7 +27,7 @@ export default function Results() {
           onClick={() => {
             localStorage.removeItem("answers_temp");
             localStorage.removeItem("full_results");
-            window.location.href = "/";
+            navigate("/");
           }}
         >
           Restart
@@ -33,8 +36,9 @@ export default function Results() {
     );
   }
 
+  // SCORES
   const studentCorrect = results.filter(r => r.studentCorrect).length;
-  const modelCorrect   = results.filter(r => r.modelCorrect).length;
+  const modelCorrect = results.filter(r => r.modelCorrect).length;
   const total = results.length;
 
   let message = "";
@@ -51,23 +55,29 @@ export default function Results() {
     color = "text-blue-600";
   }
 
+  // RENDER
   return (
     <>
       <ScoreTracker />
 
       {/* Confetti when student wins */}
       {studentCorrect > modelCorrect && (
-        <Confetti width={width} height={height} recycle={false} numberOfPieces={300} />
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={300}
+        />
       )}
 
       <div className="flex flex-col items-center mt-16 text-center px-4">
-
-        <h1 className={`text-4xl font-bold mb-6 ${color} ${modelCorrect > studentCorrect ? "shake" : ""}`}>
+        <h1 className={`text-4xl font-bold mb-6 ${color}`}>
           {message}
         </h1>
 
         <p className="text-xl mb-8">
-          <b>Your Score:</b> {studentCorrect} / {total} <br />
+          <b>Your Score:</b> {studentCorrect} / {total}
+          <br />
           <b>Model Score:</b> {modelCorrect} / {total}
         </p>
 
@@ -80,12 +90,11 @@ export default function Results() {
           onClick={() => {
             localStorage.removeItem("answers_temp");
             localStorage.removeItem("full_results");
-            window.location.href = "/";
+            navigate("/");
           }}
         >
           Restart
         </button>
-
       </div>
     </>
   );

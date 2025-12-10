@@ -1,18 +1,19 @@
-import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 export default function Feedback() {
+  const navigate = useNavigate();
   const [params] = useSearchParams();
 
   // STUDENT INFO
   const correct = params.get("correct") === "true";
   const src = params.get("src");
-  const label = params.get("label");   // "real" or "fake"
+  const label = params.get("label"); // "real" | "fake"
   const nextIndex = Number(params.get("next"));
   const total = Number(params.get("total"));
 
   // MODEL INFO (FROM CSV)
-  const modelLabelNum = Number(params.get("model_label")); // 0 or 1
+  const modelLabelNum = Number(params.get("model_label")); // 0 | 1
   const confidence = Number(params.get("confidence"));
   const probReal = Number(params.get("prob_real"));
   const probFake = Number(params.get("prob_fake"));
@@ -20,13 +21,18 @@ export default function Feedback() {
   const modelLabel = modelLabelNum === 0 ? "real" : "fake";
   const modelCorrect = modelLabel === label;
 
-  // SAVE RESULTS (ONCE)
+  // PREVENT DOUBLE SAVE
+  const savedRef = useRef(false);
+
   useEffect(() => {
+    if (savedRef.current) return;
+    savedRef.current = true;
+
     const entry = {
       studentCorrect: correct,
       modelPred: modelLabel,
-      modelCorrect: modelCorrect,
-      confidence: confidence,
+      modelCorrect,
+      confidence,
       trueLabel: label,
       image: src,
     };
@@ -34,14 +40,14 @@ export default function Feedback() {
     const prev = JSON.parse(localStorage.getItem("full_results") || "[]");
     prev.push(entry);
     localStorage.setItem("full_results", JSON.stringify(prev));
-  }, []); 
+  }, [correct, modelLabel, modelCorrect, confidence, label, src]);
 
-  // NAVIGATION
+  // NAVIGATION (SPA-SAFE)
   function goNext() {
     if (nextIndex >= total) {
-      window.location.href = "/results";
+      navigate("/results");
     } else {
-      window.location.href = "/test?index=" + nextIndex;
+      navigate(`/test?index=${nextIndex}`);
     }
   }
 
@@ -50,19 +56,23 @@ export default function Feedback() {
     <div className="flex flex-col items-center mt-12 text-center">
 
       {/* Student correctness */}
-      <h1 className={`text-4xl font-bold ${correct ? "text-green-600" : "text-red-600"}`}>
+      <h1
+        className={`text-4xl font-bold ${
+          correct ? "text-green-600" : "text-red-600"
+        }`}
+      >
         {correct ? "Correct!" : "Incorrect"}
       </h1>
 
       <p className="text-lg text-gray-600 mt-2">
-        This image was <b>{label.toUpperCase()}</b>.
+        This image was <b>{label?.toUpperCase()}</b>.
       </p>
 
       {/* Image */}
       <img
         src={src}
-        className="w-80 h-80 object-cover rounded-xl shadow mt-6"
         alt="Test image"
+        className="w-80 h-80 object-cover rounded-xl shadow mt-6"
       />
 
       {/* Model prediction */}
@@ -75,8 +85,8 @@ export default function Feedback() {
         </p>
 
         <p className="mt-2 text-sm text-gray-500">
-          (Model thinks: real = {(probReal * 100).toFixed(1)}%, 
-          fake = {(probFake * 100).toFixed(1)}%)
+          (Model thinks: real = {(probReal * 100).toFixed(1)}%, fake ={" "}
+          {(probFake * 100).toFixed(1)}%)
         </p>
       </div>
 
