@@ -1,21 +1,21 @@
-# Node
+# dependencies
 node_modules/
+
+# production build
 dist/
 dist-ssr/
 
-# Data / assets
-public/
-backend/
+# local env / logs
+*.log
+*.local
+.DS_Store
 
-# Python / ML
-*.pth
-*.pt
-*.onnx
+# editor / IDE
+.vscode/
+.idea/
+
+# Python / backend artifacts (just in case)
 __pycache__/
 *.pyc
-
-# Logs
-*.log
-
-# OS
-.DS_Store
+*.pyo
+.env
